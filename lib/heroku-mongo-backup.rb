@@ -175,6 +175,8 @@ module HerokuMongoBackup
       #  end
       #
       #else
+      #  env = ENV['RAILS_ENV'] || ENV['RACK_ENV']
+
         mongoid_config  = YAML.load_file("config/mongoid.yml")
         config = {}
         defaults        = mongoid_config['defaults']
