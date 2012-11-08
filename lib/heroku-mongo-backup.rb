@@ -178,7 +178,7 @@ module HerokuMongoBackup
         mongoid_config  = YAML.load_file("config/mongoid.yml")
         config = {}
         defaults        = mongoid_config['defaults']
-        dev_config      = mongoid_config['development']
+        dev_config      = mongoid_config[Rails.env]
 
         config.merge!(defaults) unless defaults.nil?
         config.merge!(dev_config)
@@ -190,7 +190,7 @@ module HerokuMongoBackup
 
         if uri == 'mongodb://:/' # new mongoid version 3.x
           mongoid_config  = YAML.load_file("config/mongoid.yml")
-          dev_config      = mongoid_config['development']['sessions']['default']
+          dev_config      = mongoid_config[Rails.env]['sessions']['default']
           host_port       = dev_config['hosts'].first
           database        = dev_config['database']
           uri = "mongodb://#{host_port}/#{database}"
