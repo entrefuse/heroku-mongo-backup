@@ -117,6 +117,9 @@ module HerokuMongoBackup
       if bucket.nil?
         bucket          = ENV['S3_BUCKET']
       end
+      if bucket.nil? and defined?(Settings)
+        bucket = Settings.aws.bucket
+      end
 
       access_key_id     = ENV['S3_KEY_ID']
       if access_key_id.nil?
@@ -125,6 +128,9 @@ module HerokuMongoBackup
       if access_key_id.nil?
         access_key_id   = ENV['AWS_ACCESS_KEY_ID']
       end
+      if access_key_id.nil? and defined?(Settings)
+        access_key_id = Settings.aws.access_key_id
+      end
 
       secret_access_key = ENV['S3_SECRET_KEY']
       if secret_access_key.nil?
@@ -132,6 +138,9 @@ module HerokuMongoBackup
       end
       if secret_access_key.nil?
         secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      end
+      if secret_access_key.nil? and defined?(Settings)
+        secret_access_key = Settings.aws.secret_access_key
       end
 
       @bucket = HerokuMongoBackup::s3_connect(bucket, access_key_id, secret_access_key)
