@@ -1,3 +1,5 @@
+** This fork changes the original gem to be configurable through static accessors instead of relying on ENV variables **
+
 ## heroku-mongo-backup *— backup mongodb on Heroku and push it to S3 or FTP storage*
 
 **heroku-mongo-backup** does:

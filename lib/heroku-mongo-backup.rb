@@ -10,6 +10,11 @@ require 'net/ftp'
 
 module HerokuMongoBackup
 
+  class << self
+    attr_accessor :aws_bucket, :aws_access_key_id, :aws_secret_access_key,
+                  :mongo_username, :mongo_password, :mongo_host, :mongo_database, :mongo_url
+  end
+
   if defined?(Rails::Railtie)
     class Railtie < Rails::Railtie
       rake_tasks do
@@ -107,43 +112,7 @@ module HerokuMongoBackup
     end
     
     def s3_connect
-      bucket            = ENV['S3_BACKUPS_BUCKET']
-      if bucket.nil?
-        bucket          = ENV['S3_BACKUP_BUCKET']
-      end
-      if bucket.nil?
-        bucket          = ENV['S3_BACKUP']
-      end
-      if bucket.nil?
-        bucket          = ENV['S3_BUCKET']
-      end
-      if bucket.nil? and defined?(Settings)
-        bucket = Settings.aws.bucket
-      end
-
-      access_key_id     = ENV['S3_KEY_ID']
-      if access_key_id.nil?
-        access_key_id   = ENV['S3_KEY']
-      end
-      if access_key_id.nil?
-        access_key_id   = ENV['AWS_ACCESS_KEY_ID']
-      end
-      if access_key_id.nil? and defined?(Settings)
-        access_key_id = Settings.aws.access_key_id
-      end
-
-      secret_access_key = ENV['S3_SECRET_KEY']
-      if secret_access_key.nil?
-        secret_access_key = ENV['S3_SECRET']
-      end
-      if secret_access_key.nil?
-        secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-      end
-      if secret_access_key.nil? and defined?(Settings)
-        secret_access_key = Settings.aws.secret_access_key
-      end
-
-      @bucket = HerokuMongoBackup::s3_connect(bucket, access_key_id, secret_access_key)
+      @bucket = HerokuMongoBackup::s3_connect(HerokuMongoBackup.aws_bucket, HerokuMongoBackup.aws_access_key_id, HerokuMongoBackup.aws_secret_access_key)
     end
 
     def s3_upload
@@ -160,52 +129,14 @@ module HerokuMongoBackup
 
     def initialize connect = true
       @file_name = Time.now.strftime("%Y-%m-%d_%H-%M-%S.gz")
-  
-      #if( ['production', 'staging'].include?(ENV['RAILS_ENV'] || ENV['RACK_ENV']) )
-      #
-      #  #config_template = ERB.new(IO.read("config/mongoid.yml"))
-      #  #uri = YAML.load(config_template.result)['production']['uri']
-      #  uri = ENV['MONGO_URL']
-      #
-      #  if uri.nil?
-      #    uri = ENV['MONGOHQ_URL']
-      #  end
-      #  if uri.nil?
-      #    uri = ENV['MONGOLAB_URI']
-      #  end
-      #
-      #else
-      #  env = ENV['RAILS_ENV'] || ENV['RACK_ENV']
 
-        mongoid_config  = YAML.load_file("config/mongoid.yml")
-        config = {}
-        defaults        = mongoid_config['defaults']
-        dev_config      = mongoid_config[Rails.env]
-
-        config.merge!(defaults) unless defaults.nil?
-        config.merge!(dev_config)
-
-        host            = config['host']
-        port            = config['port']
-        database        = config['database']
-        uri = "mongodb://#{host}:#{port}/#{database}"
-
-        if uri == 'mongodb://:/' # new mongoid version 3.x
-          mongoid_config  = YAML.load_file("config/mongoid.yml")
-          dev_config      = mongoid_config[Rails.env]['sessions']['default']
-          host_port       = ENV['MONGO_HOST'] || dev_config['hosts'].first
-          database        = dev_config['database']
-          username        = dev_config['username']
-          password        = dev_config['password']
-          if username and username != ""
-            uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
-          else
-            uri = "mongodb://#{host_port}/#{database}"
-          end
-        end
-      #end
-  
-      @url = uri
+      if HerokuMongoBackup.mongo_url
+        @url = HerokuMongoBackup.mongo_url
+      elsif HerokuMongoBackup.mongo_username
+        @url = "mongodb://#{HerokuMongoBackup.mongo_username}:#{HerokuMongoBackup.mongo_password}@#{HerokuMongoBackup.mongo_host}/#{HerokuMongoBackup.mongo_database}"
+      else
+        @url = "mongodb://#{HerokuMongoBackup.mongo_host}/#{HerokuMongoBackup.mongo_database}"
+      end
   
       puts "Using database: #{@url}"
   
