@@ -195,7 +195,9 @@ module HerokuMongoBackup
           dev_config      = mongoid_config[Rails.env]['sessions']['default']
           host_port       = dev_config['hosts'].first
           database        = dev_config['database']
-          uri = "mongodb://#{host_port}/#{database}"
+          username        = dev_config['username']
+          password        = dev_config['password']
+          uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
         end
       #end
   
