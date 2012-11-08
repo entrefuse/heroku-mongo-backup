@@ -152,20 +152,20 @@ module HerokuMongoBackup
     def initialize connect = true
       @file_name = Time.now.strftime("%Y-%m-%d_%H-%M-%S.gz")
   
-      if( ['production', 'staging'].include?(ENV['RAILS_ENV'] || ENV['RACK_ENV']) )
-
-        #config_template = ERB.new(IO.read("config/mongoid.yml"))
-        #uri = YAML.load(config_template.result)['production']['uri']
-        uri = ENV['MONGO_URL']
-
-        if uri.nil?
-          uri = ENV['MONGOHQ_URL']
-        end
-        if uri.nil?
-          uri = ENV['MONGOLAB_URI']
-        end          
-      
-      else
+      #if( ['production', 'staging'].include?(ENV['RAILS_ENV'] || ENV['RACK_ENV']) )
+      #
+      #  #config_template = ERB.new(IO.read("config/mongoid.yml"))
+      #  #uri = YAML.load(config_template.result)['production']['uri']
+      #  uri = ENV['MONGO_URL']
+      #
+      #  if uri.nil?
+      #    uri = ENV['MONGOHQ_URL']
+      #  end
+      #  if uri.nil?
+      #    uri = ENV['MONGOLAB_URI']
+      #  end
+      #
+      #else
         mongoid_config  = YAML.load_file("config/mongoid.yml")
         config = {}
         defaults        = mongoid_config['defaults']
@@ -186,7 +186,7 @@ module HerokuMongoBackup
           database        = dev_config['database']
           uri = "mongodb://#{host_port}/#{database}"
         end
-      end
+      #end
   
       @url = uri
   
