@@ -197,7 +197,11 @@ module HerokuMongoBackup
           database        = dev_config['database']
           username        = dev_config['username']
           password        = dev_config['password']
-          uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
+          if username and username != ""
+            uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
+          else
+            uri = "mongodb://#{host_port}/#{database}"
+          end
         end
       #end
   
