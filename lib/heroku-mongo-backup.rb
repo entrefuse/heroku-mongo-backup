@@ -195,6 +195,11 @@ module HerokuMongoBackup
           dev_config      = mongoid_config[Rails.env]['sessions']['default']
           host_port       = ENV['MONGO_HOST'] || dev_config['hosts'].first
           database        = dev_config['database']
+
+          if database.include?("<%=")
+            database = eval(database.sub("<%=","").sub("%>",""))
+          end
+
           username        = dev_config['username']
           password        = dev_config['password']
           if username and username != ""
