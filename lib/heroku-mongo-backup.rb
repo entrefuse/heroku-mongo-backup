@@ -185,29 +185,23 @@ module HerokuMongoBackup
         config.merge!(defaults) unless defaults.nil?
         config.merge!(dev_config)
 
-        host            = config['host']
-        port            = config['port']
-        database        = config['database']
-        uri = "mongodb://#{host}:#{port}/#{database}"
+        mongoid_config  = YAML.load_file("config/mongoid.yml")
+        dev_config      = mongoid_config[Rails.env]['sessions']['default']
+        host_port       = ENV['MONGO_HOST'] || dev_config['hosts'].first
+        database        = dev_config['database']
 
-        if uri == 'mongodb://:/' # new mongoid version 3.x
-          mongoid_config  = YAML.load_file("config/mongoid.yml")
-          dev_config      = mongoid_config[Rails.env]['sessions']['default']
-          host_port       = ENV['MONGO_HOST'] || dev_config['hosts'].first
-          database        = dev_config['database']
-
-          if database.include?("<%=")
-            database = eval(database.sub("<%=","").sub("%>",""))
-          end
-
-          username        = dev_config['username']
-          password        = dev_config['password']
-          if username and username != ""
-            uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
-          else
-            uri = "mongodb://#{host_port}/#{database}"
-          end
+        if database.include?("<%=")
+          database = eval(database.sub("<%=","").sub("%>",""))
         end
+
+        username        = dev_config['username']
+        password        = dev_config['password']
+        if username and username != ""
+          uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
+        else
+          uri = "mongodb://#{host_port}/#{database}"
+        end
+
       #end
 
       @url = uri
