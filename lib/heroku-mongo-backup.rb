@@ -188,14 +188,11 @@ module HerokuMongoBackup
         mongoid_config  = YAML.load_file("config/mongoid.yml")
         dev_config      = mongoid_config[Rails.env]['sessions']['default']
         host_port       = ENV['MONGO_HOST'] || dev_config['hosts'].first
-        database        = dev_config['database']
+        database        = eval_tags(dev_config['database'])
 
-        if database.include?("<%=")
-          database = eval(database.sub("<%=","").sub("%>",""))
-        end
+        username        = eval_tags(dev_config['username'])
+        password        = eval_tags(dev_config['password'])
 
-        username        = dev_config['username']
-        password        = dev_config['password']
         if username and username != ""
           uri = "mongodb://#{username}:#{password}@#{host_port}/#{database}"
         else
@@ -250,6 +247,10 @@ module HerokuMongoBackup
       end
 
       self.load
+    end
+
+    def eval_tags(tags)
+      tags.include?('<%=') ? eval(tags.sub('<%=','').sub('%>','')) : tags
     end
   end
 end
