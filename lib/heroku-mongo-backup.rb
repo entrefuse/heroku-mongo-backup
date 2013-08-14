@@ -216,7 +216,7 @@ module HerokuMongoBackup
       end
     end
 
-    def backup files_number_to_leave=0
+    def backup files_number_to_leave=15
       self.chdir    
       self.store
 
@@ -228,7 +228,13 @@ module HerokuMongoBackup
       end
 
       if files_number_to_leave > 0
-        HerokuMongoBackup::remove_old_backup_files(@bucket, files_number_to_leave)
+        begin
+          HerokuMongoBackup::remove_old_backup_files(@bucket, files_number_to_leave)
+        rescue => ex
+          puts 'Failed to remove old backup files'
+          puts ex.to_s
+          puts ex.backtrace
+        end
       end
     end
     
@@ -250,7 +256,11 @@ module HerokuMongoBackup
     end
 
     def eval_tags(tags)
-      tags.include?('<%=') ? eval(tags.sub('<%=','').sub('%>','')) : tags
+      if tags
+        tags.include?('<%=') ? eval(tags.sub('<%=','').sub('%>','')) : tags
+      else
+        tags
+      end
     end
   end
 end
